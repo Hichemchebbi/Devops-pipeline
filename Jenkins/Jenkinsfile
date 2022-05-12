@@ -3,6 +3,7 @@ pipeline {
 
     environment {
 		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+        SHORT_COMMIT = "${GIT_COMMIT[0..7]}"
 	}
     stages {
         stage('Docker Login') {
@@ -12,18 +13,14 @@ pipeline {
         }
         stage('Build & push Dockerfile') {
             steps {
-                sh """
-                cd DevOps-Pipeline/laravel-app
-                ansible-playbook playbook.yml
-                """
+                sh'
+                ansible-playbook playbook.yml --extra-vars tag="$SHORT_COMMIT"'
             }
         }
         stage('Run Dockercompose playbook') {
             steps {
-                sh """
-                cd DevOps-Pipeline/laravel-app
-                ansible-playbook playbook-dcompose.yml 
-                """
+                sh 'ansible-playbook playbook-dcompose.yml'
+                
             }
         }
     }
